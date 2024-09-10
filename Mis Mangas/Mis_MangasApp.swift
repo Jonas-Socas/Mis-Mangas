@@ -9,12 +9,10 @@ import SwiftUI
 
 @main
 struct Mis_MangasApp: App {
-    @State var vm: MangasViewModel = MangasViewModel()
     var body: some Scene {
         WindowGroup {
             NavigationStack {
                 ContentView()
-                    .environment(vm)
             }
         }
     }

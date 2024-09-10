@@ -24,7 +24,7 @@ final class MangasViewModel {
         do {
             let mangas = try await interactor.fetchMangas(page: page, limit: limit).items
             await MainActor.run {
-                self.mangas = mangas
+                self.mangas += mangas
             }
         } catch {
             await MainActor.run {
