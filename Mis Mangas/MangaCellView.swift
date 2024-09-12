@@ -12,7 +12,7 @@ struct MangaCellView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
             // Imagen del manga
-            AsyncImage(url: manga.mainPicture.url) { image in
+            AsyncImage(url: manga.mainPicture?.url) { image in
                 image
                     .resizable()
                     .scaledToFit()
@@ -32,12 +32,12 @@ struct MangaCellView: View {
                     .minimumScaleFactor(0.7)
                     .foregroundColor(.primary)
                 
-                Text(manga.titleJapanese)
+                Text(manga.titleJapanese ?? "#N/A")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 
                 // Sinopsis (abreviada)
-                Text(manga.sypnosis)
+                Text(manga.sypnosis ?? "#N/A")
                     .font(.caption2)
                     .lineLimit(5)
                     .foregroundColor(.secondary)

@@ -8,13 +8,14 @@
 import SwiftUI
 
 protocol DataInteractor {
-    func fetchMangas(page: Int, limit: Int) async throws -> PaginatedResponse<Manga>
+    func fetchPaginatedMangas(url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga>
+    func searchMangas(query: String, searchType: SearchType, page: Int, limit: Int) async throws -> [Manga]
 }
 
 struct Network: DataInteractor {
     static let shared = Network()
     
-    func getJSON<JSON>(request: URLRequest, type: JSON.Type) async throws -> JSON where JSON: Decodable {
+    private func getJSON<JSON>(request: URLRequest, type: JSON.Type) async throws -> JSON where JSON: Decodable {
         let (data, response) = try await URLSession.shared.getData(for: request)
         if response.statusCode == 200 {
             do {
@@ -27,8 +28,17 @@ struct Network: DataInteractor {
         }
     }
     
-    func fetchMangas(page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
-        let url = URL.getMangas.withQueryItems(["page" : String(page), "per" : String(limit)])
+    func fetchPaginatedMangas(url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
+        let url = url.withQueryItems(["page" : String(page), "per" : String(limit)])
         return try await getJSON(request: .get(url: url), type: PaginatedResponse<Manga>.self)
+    }
+    
+    func searchMangas(query: String, searchType: SearchType, page: Int, limit: Int) async throws -> [Manga] {
+        switch searchType {
+        case .beginsWith:
+            return try await getJSON(request: .get(url: URL.getMangasByBeginWith.appending(path: query)), type: [Manga].self)
+        case .contains:
+            return try await fetchPaginatedMangas(url: URL.getMangasByContains.appending(component: query), page: page, limit: limit).items
+        }
     }
 }

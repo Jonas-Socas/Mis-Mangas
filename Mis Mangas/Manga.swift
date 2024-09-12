@@ -8,20 +8,20 @@
 import Foundation
 
 struct Manga: Decodable {
-    var id: UInt8
+    var id: Int
     var title: String
-    var titleJapanese: String
+    var titleJapanese: String?
     var titleEnglish: String?
-    var mainPicture: String
+    var mainPicture: String?
     var status: String
-    var startDate: String
+    var startDate: String?
     var endDate: String?
     var score: Float
     var volumes: Int?
     var chapters: Int?
     var url: String
     var background: String?
-    var sypnosis: String
+    var sypnosis: String?
     var themes: [Theme]
     var genres: [Genre]
     var demographics: [Demographic]

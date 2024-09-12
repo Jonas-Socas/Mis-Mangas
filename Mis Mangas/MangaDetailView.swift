@@ -15,7 +15,7 @@ struct MangaDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 
                 // Imagen principal del manga
-                AsyncImage(url: manga.mainPicture.url) { image in
+                AsyncImage(url: manga.mainPicture?.url) { image in
                     image
                         .resizable()
                         .scaledToFit()
@@ -71,7 +71,7 @@ struct MangaDetailView: View {
                 
                 // Fechas de inicio y fin (si existen)
                 VStack(alignment: .leading, spacing: 8) {
-                    if let startDate = try? Date(manga.startDate, strategy: .iso8601) {
+                    if let startDate = try? Date(manga.startDate ?? "#N/A", strategy: .iso8601) {
                         Text("Start Date: \(startDate.formatted(date: .long, time: .omitted))")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -91,7 +91,7 @@ struct MangaDetailView: View {
                         .font(.headline)
                         .padding(.top)
                     
-                    Text(manga.sypnosis)
+                    Text(manga.sypnosis ?? "#N/A")
                         .font(.body)
                         .foregroundColor(.primary)
                         .padding(.bottom)

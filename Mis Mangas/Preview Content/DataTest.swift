@@ -8,7 +8,19 @@
 import Foundation
 
 struct DataTest: DataInteractor {
-    func fetchMangas(page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
+    func searchMangas(query: String, searchType: SearchType, page: Int = 1, limit: Int = 10) async throws -> [Manga] {
+        let url = Bundle.main.url(forResource: "mangas_search", withExtension: "json")!
+        let data = try Data(contentsOf: url)
+        let rawdata = try JSONDecoder().decode([Manga].self, from: data)
+        switch searchType {
+        case .beginsWith:
+            return rawdata.filter { $0.title.lowercased().hasPrefix(query.lowercased()) }
+        case .contains:
+            return rawdata.filter { $0.title.lowercased().contains(query.lowercased()) }
+        }
+    }
+    
+    func fetchPaginatedMangas(url: URL = URL.getMangas, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
         let url = Bundle.main.url(forResource: "mangas", withExtension: "json")!
         let data = try Data(contentsOf: url)
         return try JSONDecoder().decode(PaginatedResponse<Manga>.self, from: data)

@@ -11,10 +11,12 @@ struct MangasListView: View {
     @Environment(MangasViewModel.self) var vm
     @State private var page = 1
     @State private var limit = 10
-    @State private var imageVM = ImageVM()
-    
+    @State private var searchText = ""
+    @State private var selectedTokens: [SearchTokenEnum] = []
+    @State private var suggestedToken = SearchTokenEnum.allCases
+    @State private var searchType: SearchType = .beginsWith
     var body: some View {
-        ZStack{
+        ZStack(alignment: .top) {
             List(vm.mangas, id: \.id) { manga in
                 if vm.showAlert {
                     Text(vm.errorMsg)
@@ -34,6 +36,32 @@ struct MangasListView: View {
         .task {
             await vm.getData(page: page, limit: limit)
         }
+        .searchable(text: $searchText, tokens: $selectedTokens, prompt: "Buscar por autor, género, temática") { token in
+            Text(token.rawValue)
+        }
+        .searchSuggestions {
+            let authorSearchSuggetions: [SearchTokenEnum] = [.beginWith, .containsIn]
+            let filteredAllSearchTokenEnum = SearchTokenEnum.allCases.filter { token in
+                !selectedTokens.contains(token)
+            }
+            if !selectedTokens.contains(.author) {
+                ForEach(filteredAllSearchTokenEnum) { token in
+                    Button {
+                        selectedTokens.append(token)
+                    } label: {
+                        Text(token.rawValue)
+                    }
+                }
+            } else if !selectedTokens.contains(where: {authorSearchSuggetions.contains($0)}) {
+                ForEach(authorSearchSuggetions) { token in
+                    Button {
+                        selectedTokens.append(token)
+                    } label: {
+                        Text(token.rawValue)
+                    }
+                }
+            }
+        }
     }
     
     private func loadMore() {
@@ -45,6 +73,8 @@ struct MangasListView: View {
 }
 
 #Preview {
-    MangasListView()
-        .environment(MangasViewModel(interactor: DataTest()))
+    NavigationStack {
+        MangasListView()
+            .environment(MangasViewModel(interactor: DataTest()))
+    }
 }

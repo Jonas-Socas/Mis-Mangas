@@ -16,6 +16,11 @@ struct ContentView: View {
                 .tabItem { Image(systemName: "list.bullet.rectangle.portrait") }
             Text("Colección")
                 .tabItem { Image(systemName: "magazine") }
+            MangaSearchView()
+                .environment(vm)
+                .tabItem {
+                    Label("Search", systemImage: "magnifyingglass")
+                }
         }
     }
 }
