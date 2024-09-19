@@ -11,4 +11,7 @@ extension String {
     var url: URL? {
         URL(string: self.replacingOccurrences(of: "\"", with: ""))
     }
+    
+    static let empty: String =  ""
+    
 }

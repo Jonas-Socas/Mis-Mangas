@@ -8,8 +8,14 @@
 import SwiftUI
 
 protocol DataInteractor {
+    func fetchPaginatedMangas(query: String, url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga>
+    func fetchMangas(query: String, url: URL) async throws -> [Manga]
     func fetchPaginatedMangas(url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga>
-    func searchMangas(query: String, searchType: SearchType, page: Int, limit: Int) async throws -> [Manga]
+    func fetchMangas(url: URL) async throws -> [Manga]
+    func fetchAuthors() async throws -> [Author]
+    func fetchDemographics() async throws -> [String]
+    func fetchGenres() async throws -> [String]
+    func fetchThemes() async throws -> [String]
 }
 
 struct Network: DataInteractor {
@@ -28,17 +34,41 @@ struct Network: DataInteractor {
         }
     }
     
-    func fetchPaginatedMangas(url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
-        let url = url.withQueryItems(["page" : String(page), "per" : String(limit)])
+    func fetchPaginatedMangas(query: String, url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
+        let url = url
+            .appending(component: query)
+            .withQueryItems(["page" : String(page), "per" : String(limit)])
         return try await getJSON(request: .get(url: url), type: PaginatedResponse<Manga>.self)
     }
     
-    func searchMangas(query: String, searchType: SearchType, page: Int, limit: Int) async throws -> [Manga] {
-        switch searchType {
-        case .beginsWith:
-            return try await getJSON(request: .get(url: URL.getMangasByBeginWith.appending(path: query)), type: [Manga].self)
-        case .contains:
-            return try await fetchPaginatedMangas(url: URL.getMangasByContains.appending(component: query), page: page, limit: limit).items
-        }
+    func fetchMangas(query: String, url: URL) async throws -> [Manga] {
+        let url = url.appending(component: query)
+        return try await getJSON(request: .get(url: url), type: [Manga].self)
+    }
+    
+    func fetchPaginatedMangas(url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
+        let url = url
+            .withQueryItems(["page" : String(page), "per" : String(limit)])
+        return try await getJSON(request: .get(url: url), type: PaginatedResponse<Manga>.self)
+    }
+    
+    func fetchMangas(url: URL) async throws -> [Manga] {
+        return try await getJSON(request: .get(url: url), type: [Manga].self)
+    }
+    
+    func fetchAuthors() async throws -> [Author] {
+        return try await getJSON(request: .get(url: URL.getAuthors), type: [Author].self)
+    }
+    
+    func fetchDemographics() async throws -> [String] {
+        return try await getJSON(request: .get(url: URL.getDemographics), type: [String].self)
+    }
+    
+    func fetchGenres() async throws -> [String] {
+        return try await getJSON(request: .get(url: URL.getGenres), type: [String].self)
+    }
+    
+    func fetchThemes() async throws -> [String] {
+        return try await getJSON(request: .get(url: URL.getThemes), type: [String].self)
     }
 }

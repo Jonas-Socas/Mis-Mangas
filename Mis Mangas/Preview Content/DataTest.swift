@@ -8,22 +8,52 @@
 import Foundation
 
 struct DataTest: DataInteractor {
-    func searchMangas(query: String, searchType: SearchType, page: Int = 1, limit: Int = 10) async throws -> [Manga] {
+    func fetchPaginatedMangas(query: String = .empty, url: URL = URL.getMangas, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
+        let url = Bundle.main.url(forResource: "mangas", withExtension: "json")!
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode(PaginatedResponse<Manga>.self, from: data)
+    }
+    
+    func fetchMangas(query: String = .empty, url: URL = URL.getMangas) async throws -> [Manga] {
         let url = Bundle.main.url(forResource: "mangas_search", withExtension: "json")!
         let data = try Data(contentsOf: url)
-        let rawdata = try JSONDecoder().decode([Manga].self, from: data)
-        switch searchType {
-        case .beginsWith:
-            return rawdata.filter { $0.title.lowercased().hasPrefix(query.lowercased()) }
-        case .contains:
-            return rawdata.filter { $0.title.lowercased().contains(query.lowercased()) }
-        }
+        return try JSONDecoder().decode([Manga].self, from: data)
     }
     
     func fetchPaginatedMangas(url: URL = URL.getMangas, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
         let url = Bundle.main.url(forResource: "mangas", withExtension: "json")!
         let data = try Data(contentsOf: url)
         return try JSONDecoder().decode(PaginatedResponse<Manga>.self, from: data)
+    }
+    
+    func fetchMangas(url: URL = URL.getMangas) async throws -> [Manga] {
+        let url = Bundle.main.url(forResource: "mangas_search", withExtension: "json")!
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode([Manga].self, from: data)
+    }
+    
+    func fetchAuthors() async throws -> [Author] {
+        let url = Bundle.main.url(forResource: "authors", withExtension: "json")!
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode([Author].self, from: data)
+    }
+    
+    func fetchDemographics() async throws -> [String] {
+        let url = Bundle.main.url(forResource: "demographics", withExtension: "json")!
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode([String].self, from: data)
+    }
+    
+    func fetchGenres() async throws -> [String] {
+        let url = Bundle.main.url(forResource: "genres", withExtension: "json")!
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode([String].self, from: data)
+    }
+    
+    func fetchThemes() async throws -> [String] {
+        let url = Bundle.main.url(forResource: "themes", withExtension: "json")!
+        let data = try Data(contentsOf: url)
+        return try JSONDecoder().decode([String].self, from: data)
     }
 }
 

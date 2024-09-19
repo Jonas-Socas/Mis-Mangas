@@ -7,14 +7,55 @@
 
 import SwiftUI
 
+struct MangasView: View {
+    @Environment(MangasViewModel.self) var vm
+    @StateObject private var searchHelper: SearchHelper = .init()
+    
+    var body: some View {
+        MangasListView(searchHelper: searchHelper)
+        .navigationTitle("Listado de Mangas")
+        .task {
+            await vm.getAllMangas()
+        }
+        .searchable(text: $searchHelper.searchText, tokens: $searchHelper.selectedTokens, prompt: "Buscar por autor, género, temática") { token in
+            Text(token.rawValue)
+        }
+        .searchSuggestions {
+            ForEach(searchHelper.searchSuggestions, id: \.self) { searchSuggested in
+                if let token = SearchTokenEnum(rawValue: searchSuggested) {
+                    Button {
+                        searchHelper.selectedTokens.append(token)
+                    } label: {
+                        Text(
+                            searchSuggested
+                        )
+                    }
+                } else {
+                    Text(searchSuggested)
+                        .searchCompletion(searchSuggested)
+                }
+            }
+        }
+        .onChange(of: searchHelper.debounceText) {
+            Task {
+                if let lastToken = searchHelper.selectedTokens.last {
+                    await vm.manageSearch(query:searchHelper.searchText, searchMethod: lastToken)}
+            }
+        }
+    }
+    
+
+}
+
 struct MangasListView: View {
     @Environment(MangasViewModel.self) var vm
-    @State private var page = 1
-    @State private var limit = 10
-    @State private var searchText = ""
-    @State private var selectedTokens: [SearchTokenEnum] = []
-    @State private var suggestedToken = SearchTokenEnum.allCases
-    @State private var searchType: SearchType = .beginsWith
+    @Environment(\.isSearching) var isSearching
+    @ObservedObject var searchHelper: SearchHelper
+    
+    var hideButtons: Bool {
+        searchHelper.selectedTokens.contains(.beginWith)
+    }
+    
     var body: some View {
         ZStack(alignment: .top) {
             List(vm.mangas, id: \.id) { manga in
@@ -27,54 +68,55 @@ struct MangasListView: View {
                 }
             }
             .listStyle(.plain)
-            Button("Load More", action: loadMore)
-                .buttonStyle(.borderedProminent)
-                .padding()
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-        }
-        .navigationTitle("Listado de Mangas")
-        .task {
-            await vm.getData(page: page, limit: limit)
-        }
-        .searchable(text: $searchText, tokens: $selectedTokens, prompt: "Buscar por autor, género, temática") { token in
-            Text(token.rawValue)
-        }
-        .searchSuggestions {
-            let authorSearchSuggetions: [SearchTokenEnum] = [.beginWith, .containsIn]
-            let filteredAllSearchTokenEnum = SearchTokenEnum.allCases.filter { token in
-                !selectedTokens.contains(token)
+            HStack {
+                Button("Previous", action: previous)
+                    .buttonStyle(.borderedProminent)
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                    .opacity(vm.page == 1 ? 0 : 1)
+                Button("Next", action: next)
+                    .buttonStyle(.borderedProminent)
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             }
-            if !selectedTokens.contains(.author) {
-                ForEach(filteredAllSearchTokenEnum) { token in
-                    Button {
-                        selectedTokens.append(token)
-                    } label: {
-                        Text(token.rawValue)
-                    }
-                }
-            } else if !selectedTokens.contains(where: {authorSearchSuggetions.contains($0)}) {
-                ForEach(authorSearchSuggetions) { token in
-                    Button {
-                        selectedTokens.append(token)
-                    } label: {
-                        Text(token.rawValue)
-                    }
+            .opacity(hideButtons ? 0 : 1)
+            .disabled(hideButtons)
+        }
+        .onChange(of: isSearching) {
+            if !isSearching {
+                vm.reset()
+                searchHelper.reset()
+                Task {
+                    await vm.getAllMangas()
                 }
             }
+            searchHelper.isSearching = isSearching
         }
     }
     
-    private func loadMore() {
-        page += 1
+    private func previous() {
+        vm.page -= 1
+        reload()
+    }
+    
+    private func next() {
+        vm.page += 1
+        reload()
+    }
+    
+    private func reload() {
         Task {
-            await vm.getData(page: page, limit: limit)
+            if let lastToken = searchHelper.selectedTokens.last, isSearching {
+                await vm.manageSearch(query: searchHelper.searchText, searchMethod: lastToken)
+            } else {
+                await vm.getAllMangas()
+            }
         }
     }
 }
-
 #Preview {
     NavigationStack {
-        MangasListView()
+        MangasView()
             .environment(MangasViewModel(interactor: DataTest()))
     }
 }

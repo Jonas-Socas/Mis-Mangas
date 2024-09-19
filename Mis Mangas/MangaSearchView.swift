@@ -9,7 +9,6 @@ import SwiftUI
 
 struct MangaSearchView: View {
     @State private var searchQuery = ""
-    @State private var selectedSearchType: SearchType = .beginsWith
     @State private var hasAppeared: Bool = false
     
     @Environment(MangasViewModel.self) var vm
@@ -22,16 +21,16 @@ struct MangaSearchView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
             
             // Selector de búsqueda por "begins with" o "contains"
-            Picker("Search Type", selection: $selectedSearchType) {
-                Text("Begins With").tag(SearchType.beginsWith)
-                Text("Contains").tag(SearchType.contains)
-            }
-            .pickerStyle(SegmentedPickerStyle())
-            .padding()
+//            Picker("Search Type", selection: $selectedSearchType) {
+//                Text("Begins With").tag(SearchType.beginsWith)
+//                Text("Contains").tag(SearchType.contains)
+//            }
+//            .pickerStyle(SegmentedPickerStyle())
+//            .padding()
             
             // Botón para iniciar la búsqueda
             Button {
-                searchManga(query: searchQuery, searchType: selectedSearchType)
+//                searchManga(query: searchQuery, searchType: selectedSearchType)
             } label: {
                 Text("Search")
                     .padding()
@@ -73,11 +72,11 @@ struct MangaSearchView: View {
     }
     
     // Función para realizar la búsqueda
-    private func searchManga(query: String, searchType: SearchType) {
-        Task {
-            await vm.searchManga(query: query, searchType: searchType)
-        }
-    }
+//    private func searchManga(query: String, searchType: SearchType) {
+//        Task {
+//            await vm.searchManga(query: query, searchType: searchType)
+//        }
+//    }
 }
 
 #Preview {
