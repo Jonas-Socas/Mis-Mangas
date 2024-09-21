@@ -16,6 +16,7 @@ protocol DataInteractor {
     func fetchDemographics() async throws -> [String]
     func fetchGenres() async throws -> [String]
     func fetchThemes() async throws -> [String]
+    func getMangaByID(id: Int) async throws -> Manga?
 }
 
 struct Network: DataInteractor {
@@ -35,6 +36,7 @@ struct Network: DataInteractor {
     }
     
     func fetchPaginatedMangas(query: String, url: URL, page: Int, limit: Int) async throws -> PaginatedResponse<Manga> {
+        guard !query.isEmpty else { return PaginatedResponse<Manga>.init(metadata: Metadata(total: 0, page: 0, per: 0), items: [])}
         let url = url
             .appending(component: query)
             .withQueryItems(["page" : String(page), "per" : String(limit)])
@@ -42,6 +44,7 @@ struct Network: DataInteractor {
     }
     
     func fetchMangas(query: String, url: URL) async throws -> [Manga] {
+        guard !query.isEmpty else { return [] }
         let url = url.appending(component: query)
         return try await getJSON(request: .get(url: url), type: [Manga].self)
     }
@@ -70,5 +73,10 @@ struct Network: DataInteractor {
     
     func fetchThemes() async throws -> [String] {
         return try await getJSON(request: .get(url: URL.getThemes), type: [String].self)
+    }
+    
+    func getMangaByID(id: Int) async throws -> Manga? {
+        let url = URL.getMangaByID.appending(component: "\(id)")
+        return try await getJSON(request: .get(url: url), type: Manga.self)
     }
 }

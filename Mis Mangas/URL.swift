@@ -21,6 +21,7 @@ extension URL {
     static let getDemographics = api.appending(path: "/list/demographics")
     static let getGenres = api.appending(path: "/list/genres")
     static let getThemes = api.appending(path: "/list/themes")
+    static let getMangaByID = api.appending(path: "/search/manga")
     
     func withQueryItems(_ queryItems: [String: String]) -> URL {
         var components = URLComponents(url: self, resolvingAgainstBaseURL: false)

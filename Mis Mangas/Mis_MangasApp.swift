@@ -6,14 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct Mis_MangasApp: App {
+    
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                ContentView()
-            }
+            ContentView()
         }
+        .modelContainer(for: [MangaInMyCollection.self])
     }
 }

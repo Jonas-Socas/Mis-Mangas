@@ -1,51 +1,11 @@
 //
-//  MangasListView.swift
+//  MangasView.swift
 //  Mis Mangas
 //
-//  Created by Jonás Socas on 10/9/24.
+//  Created by Jonás Socas on 21/9/24.
 //
 
 import SwiftUI
-
-struct MangasView: View {
-    @Environment(MangasViewModel.self) var vm
-    @StateObject private var searchHelper: SearchHelper = .init()
-    
-    var body: some View {
-        MangasListView(searchHelper: searchHelper)
-        .navigationTitle("Listado de Mangas")
-        .task {
-            await vm.getAllMangas()
-        }
-        .searchable(text: $searchHelper.searchText, tokens: $searchHelper.selectedTokens, prompt: "Buscar por autor, género, temática") { token in
-            Text(token.rawValue)
-        }
-        .searchSuggestions {
-            ForEach(searchHelper.searchSuggestions, id: \.self) { searchSuggested in
-                if let token = SearchTokenEnum(rawValue: searchSuggested) {
-                    Button {
-                        searchHelper.selectedTokens.append(token)
-                    } label: {
-                        Text(
-                            searchSuggested
-                        )
-                    }
-                } else {
-                    Text(searchSuggested)
-                        .searchCompletion(searchSuggested)
-                }
-            }
-        }
-        .onChange(of: searchHelper.debounceText) {
-            Task {
-                if let lastToken = searchHelper.selectedTokens.last {
-                    await vm.manageSearch(query:searchHelper.searchText, searchMethod: lastToken)}
-            }
-        }
-    }
-    
-
-}
 
 struct MangasListView: View {
     @Environment(MangasViewModel.self) var vm
@@ -68,6 +28,11 @@ struct MangasListView: View {
                 }
             }
             .listStyle(.plain)
+            .overlay {
+                if vm.mangas.isEmpty {
+                    ContentUnavailableView.search
+                }
+            }
             HStack {
                 Button("Previous", action: previous)
                     .buttonStyle(.borderedProminent)
@@ -114,9 +79,8 @@ struct MangasListView: View {
         }
     }
 }
+
 #Preview {
-    NavigationStack {
-        MangasView()
-            .environment(MangasViewModel(interactor: DataTest()))
-    }
+    MangasListView(searchHelper: SearchHelper())
+        .environment(MangasViewModel(interactor: DataTest()))
 }

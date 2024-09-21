@@ -55,6 +55,10 @@ struct DataTest: DataInteractor {
         let data = try Data(contentsOf: url)
         return try JSONDecoder().decode([String].self, from: data)
     }
+    
+    func getMangaByID(id: Int) async throws -> Manga? {
+        Manga.preview
+    }
 }
 
 extension Manga {

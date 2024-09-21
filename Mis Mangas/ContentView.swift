@@ -10,10 +10,13 @@ import SwiftUI
 struct ContentView: View {
     @State var vm: MangasViewModel = MangasViewModel()
     var body: some View{
-        NavigationStack {
+        TabView {
             MangasView()
                 .environment(vm)
-                .tabItem { Image(systemName: "list.bullet.rectangle.portrait") }
+                .tabItem { Label("Manga db", systemImage: "list.bullet.rectangle.portrait") }
+            MangasMyCollectionView()
+                .environment(vm)
+                .tabItem { Label("My Collection", systemImage: "person.fill") }
         }
     }
 }
